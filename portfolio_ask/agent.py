@@ -39,6 +39,12 @@ def detect_query_type(query: str) -> str:
     tax_keywords = ["tax", "ltcg", "xirr", "glossary"]
     if any(kw in lowered_query for kw in tax_keywords):
         return "general_qa"
+    full_portfolio_keywords = ["all holdings", "entire portfolio", "list everything", "all my stocks", "list all my holdings", "list my holdings"]
+    if any(kw in lowered_query for kw in full_portfolio_keywords):
+        return "full_portfolio"
+    risk_keywords = ["low risk", "safe", "defensive", "risk level"]
+    if any(kw in lowered_query for kw in risk_keywords):
+        return "risk_query"
     impact_keywords = ["impact", "news", "affected", "affect", "rank", "exposure", "holdings", "stocks", "sector", "positioned", "portfolio", "performance"]
     if any(kw in lowered_query for kw in impact_keywords):
         return "news_impact"
@@ -75,21 +81,26 @@ def cross_reference_node(state: AgentState) -> AgentState:
         with portfolio_path.open("r", encoding="utf-8") as file:
             portfolio_data = cast(list[dict[str, Any]], json.load(file))
     
-    retrieved_text = "\n".join(doc.page_content for doc in state["retrieved_docs"])
+    query_type = state["query_type"]
     mapped_holdings: list[dict[str, Any]] = []
 
-    # Identify which of our 15 holdings are mentioned in the retrieved news
-    for item in portfolio_data:
-        ticker = str(item.get("ticker", ""))
-        if ticker and ticker in retrieved_text:
-            mapped_holdings.append({
-                "ticker": ticker,
-                "holding_name": str(item.get("holding_name", "")),
-                "quantity": int(item.get("quantity", 0)),
-                "current_price": float(item.get("current_price", 0.0)),
-                "instrument_type": str(item.get("instrument_type", "")),
-                "sector": str(item.get("sector", "")),
-            })
+    # Global bypass: for full_portfolio and risk_query requests, skip text-based filtering
+    if query_type in {"full_portfolio", "risk_query"}:
+        mapped_holdings = portfolio_data
+    else:
+        retrieved_text = "\n".join(doc.page_content for doc in state["retrieved_docs"])
+        # Identify which of our holdings are mentioned in the retrieved news
+        for item in portfolio_data:
+            ticker = str(item.get("ticker", ""))
+            if ticker and ticker in retrieved_text:
+                mapped_holdings.append({
+                    "ticker": ticker,
+                    "holding_name": str(item.get("holding_name", "")),
+                    "quantity": int(item.get("quantity", 0)),
+                    "current_price": float(item.get("current_price", 0.0)),
+                    "instrument_type": str(item.get("instrument_type", "")),
+                    "sector": str(item.get("sector", "")),
+                })
 
     trace_log.append(f"cross_reference: mapped {len(mapped_holdings)} holdings to context")
 
@@ -130,7 +141,7 @@ def format_node(state: AgentState) -> AgentState:
 
     # Deduplicate sources
     sources = sorted({str(doc.metadata.get("source", "unknown")) for doc in state["retrieved_docs"]})
-    schema_cls = NewsImpact if state["query_type"] == "news_impact" else GeneralQA
+    schema_cls = NewsImpact if state["query_type"] in {"news_impact", "full_portfolio"} else GeneralQA
 
     context_block = "\n\n".join(doc.page_content for doc in state["retrieved_docs"])
     ranked_block = json.dumps(state["ranked_items"], indent=2)
@@ -144,7 +155,9 @@ def format_node(state: AgentState) -> AgentState:
         "Ensure the response matches the schema exactly. No conversational filler.\n"
         "CRITICAL: You must provide a clear, narrative explanation of the answer in the 'summary' field, especially for tax or glossary-related queries. If the user asks for an explanation (like LTCG), synthesize the retrieved glossary definitions into the summary.\n"
         "CRITICAL: Do not provide a 'meta' summary. Instead of saying 'I will analyze...', provide the actual analysis immediately based on the data. Be direct and insightful.\n"
-        "NEGATIVE CONSTRAINT: If a ticker mentioned in the query is NOT present in the 'Cross referenced ranked items' block, you MUST explicitly state that the user does not hold that specific ticker. DO NOT attribute weights or data from other holdings to tickers the user does not own."
+        "NEGATIVE CONSTRAINT: If a ticker mentioned in the query is NOT present in the 'Cross referenced ranked items' block, you MUST explicitly state that the user does not hold that specific ticker. DO NOT attribute weights or data from other holdings to tickers the user does not own.\n"
+        "GLOBAL BYPASS: If the query type is 'full_portfolio', you are receiving the complete list of assets. Categorize every single one of them into Low, Medium, or High risk based on their sector and instrument type (e.g., Bonds are Low, Growth Tech is High).\n"
+        "For every item in the 'ranked_items' list, you MUST determine the 'risk_level' (Low, Medium, or High) based on the asset type and sector. Ensure this is populated for every ticker."
     )
 
     try:
@@ -159,8 +172,22 @@ def format_node(state: AgentState) -> AgentState:
     except Exception as exc:
         trace_log.append(f"format: LLM unavailable, using deterministic fallback ({type(exc).__name__})")
         fallback = get_fallback_response(state["query"], schema_cls)
+        ranked_items = list(state.get("ranked_items", []))
+        tickers = [str(item.get("ticker", "")) for item in ranked_items if str(item.get("ticker", ""))]
+        fallback_summary = (
+            "LLM Inference failed, but your portfolio identifies potential impacts on: "
+            f"{', '.join(tickers) if tickers else 'no specific tickers were identified'}. "
+            "Please check current news for these specific holdings."
+        )
         # Ensure fallbacks also have the correct metadata
-        final_response = fallback.model_copy(update={"sources": sources or ["data/portfolio.json"], "trace": trace_log})
+        final_response = fallback.model_copy(
+            update={
+                "summary": fallback_summary,
+                "ranked_items": ranked_items,
+                "sources": sources or ["data/portfolio.json"],
+                "trace": trace_log,
+            }
+        )
 
     return {**state, "final_response": final_response, "trace_log": trace_log}
 

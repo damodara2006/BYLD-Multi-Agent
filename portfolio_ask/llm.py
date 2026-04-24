@@ -3,6 +3,7 @@ from pathlib import Path
 from pydantic import BaseModel
 from portfolio_ask.schemas import GeneralQA, NewsImpact
 from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 import os
 
 def get_llm() -> ChatOllama:
@@ -10,7 +11,7 @@ def get_llm() -> ChatOllama:
     if os.getenv("BYLD_FORCE_FALLBACK", "0") == "1":
         raise RuntimeError("Forced fallback enabled for deterministic evaluation.")
     base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    return ChatOllama(model="llama3.1:8b", base_url=base_url, temperature=0.0)
+    return ChatGroq(model="openai/gpt-oss-120b", temperature=0.0, api_key="")
 
 def get_fallback_response(query: str, schema_cls: type[BaseModel]) -> BaseModel:
     """
@@ -47,10 +48,12 @@ def get_fallback_response(query: str, schema_cls: type[BaseModel]) -> BaseModel:
     elif schema_cls == NewsImpact:
         ranked = []
         for i, item in enumerate(filtered_items):
+            risk_level = "Low" if item.get("instrument_type") == "Bond" or item.get("sector") == "FMCG" else "Medium"
             ranked.append({
                 "ticker": item["ticker"],
                 "rationale": "Static defensive fallback inclusion.",
-                "exposure_weight": 1.0 / (i + 1)
+                "exposure_weight": 1.0 / (i + 1),
+                "risk_level": risk_level,
             })
         return NewsImpact(
             query_type="heuristic_fallback",

@@ -34,6 +34,7 @@
 - I caught a naming mismatch where the evaluation script looked for '.answer' while the schema used '.summary'. I fixed this and also implemented a `--case` filter in the eval harness to allow for surgical testing of failed cases without re-running the entire suite.
 - I caught a hallucination where the LLM attributed TCS.NS's exposure weight to Samsung. I fixed this by adding a strict 'Negative Constraint' to the prompt, forcing the LLM to admit when a ticker is missing from the portfolio.
 - I identified a 'Category Drift' bug where portfolio-specific queries were being treated as general Q&A. I fixed this by expanding the keyword detection logic and hardening the system prompt to prevent 'meta' summaries.
+- I implemented a 'Global Bypass' in the cross-reference node. While the AI suggested strict news-to-ticker mapping, I realized this broke 'full portfolio' queries. I added logic to pass the entire portfolio to the LLM when the user asks for a complete list.
 
 ## A design choice you made against AI suggestion
 
@@ -43,6 +44,9 @@
 - Instead of passing messy --extra-index-url flags in the Makefile, I explicitly configured [[tool.uv.index]] and [tool.uv.sources] in the pyproject.toml. This forces uv to strictly resolve torch to the CPU-only index, ensuring the project always stays lightweight and installs in under 2 minutes for the reviewer.
 - I changed Makefile runtime commands to `uv run` so I do not depend on manual shell activation. This keeps reviewer commands predictable and avoids missing-module errors.
 - I forced the addition of a visual progress indicator using `rich`. While the AI suggested a simple CLI, a 3-minute wait on a CPU-bound local model requires a 'heartbeat' to prevent the user from thinking the process has hung.
+- I upgraded the structured schema to include a dedicated 'risk_level' field per item. This ensures that risk data is available as machine-readable metadata in the JSON, rather than being buried in the text summary.
+- I extended the Global Bypass to 'risk-based' queries. I realized that safe-haven assets (like Bonds) rarely appear in daily volatile news, so strict RAG filtering would hide the user's safest assets when they need them most.
+- I upgraded the Variant C fallback to be 'Data-Aware'. Instead of a generic error message, the system now performs a deterministic extraction of relevant tickers from the state when the LLM crashes, ensuring the user always receives actionable data.
 
 ## Time split
 
