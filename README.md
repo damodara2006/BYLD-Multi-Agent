@@ -1,7 +1,190 @@
 # BYLD-Multi-Agent
 
-Initial repository setup.
+BYLD-Multi-Agent is a production-style Python 3.11+ Retrieval-Augmented Generation (RAG) CLI for a BYLD Wealth take-home assignment.
 
-## Getting Started
+It is designed to answer portfolio and market context questions using:
 
-This repository is ready for development.
+- deterministic local data,
+- retriever + vector index,
+- a multi-step LangGraph pipeline,
+- structured Pydantic output,
+- and a deterministic fallback path when model access is unavailable.
+
+This project is intentionally CLI-only (no chatbot UI) so outputs can be tested and consumed by automation.
+
+---
+
+## Architecture at a glance
+
+The workflow is a **Variant C — Multi-Step Agent**:
+
+1. `retrieve` node: pulls relevant chunks from Chroma.
+2. `cross_reference` node: maps retrieved context to portfolio holdings.
+3. `rank` node: calculates simple exposure weights.
+4. `format` node: returns strict Pydantic JSON with `with_structured_output`.
+5. fallback mode: if Ollama fails or is disabled, it returns deterministic typed output.
+
+Main package layout:
+
+- `portfolio_ask/indexer.py`: document loading and chunking (`chunk_size=500`, `chunk_overlap=50`)
+- `portfolio_ask/vector_store.py`: Chroma + BAAI embedding setup
+- `portfolio_ask/llm.py`: Ollama model and deterministic fallback behavior
+- `portfolio_ask/agent.py`: LangGraph state machine
+- `portfolio_ask/schemas.py`: `GeneralQA` and `NewsImpact` response contracts
+- `portfolio_ask/__main__.py`: CLI entrypoint
+- `evals/cases.yaml`: fixed test cases
+- `evals/run_eval.py`: schema-driven evaluation harness
+
+---
+
+## Requirements
+
+- Python 3.11+
+- `uv` installed
+- Ollama installed locally (recommended for normal non-fallback runs)
+
+Optional but recommended:
+
+- model pulled in Ollama: `llama3.1`
+
+---
+
+## Quick start (one-command workflow)
+
+### 1) Setup environment and dependencies
+
+Run:
+
+`make setup`
+
+### 2) Generate mock data
+
+Run:
+
+`make data`
+
+This creates:
+
+- `data/portfolio.json` (15 holdings)
+- `data/news/*.md` (20 files)
+- `data/glossary.md` (wealth-tech terms)
+
+### 3) Run a single query
+
+Run:
+
+`make run QUERY="What is my tech exposure?"`
+
+Example direct CLI usage:
+
+`python3 -m portfolio_ask "What news is likely to affect my portfolio?" --trace`
+
+### 4) Run evaluation suite
+
+Run:
+
+`make eval`
+
+The eval harness validates schema shape, checks fallback behavior, prints trace for flagged cases, and exits non-zero on failures.
+
+---
+
+## Output contract
+
+The system returns one of two strict JSON schemas:
+
+### `GeneralQA`
+
+- `query_type: str`
+- `answer: str`
+- `sources: List[str]`
+- `trace: List[str]`
+
+### `NewsImpact`
+
+- `query_type: str`
+- `summary: str`
+- `ranked_items: List[{ticker, rationale, exposure_weight}]`
+- `sources: List[str]`
+- `trace: List[str]`
+
+This structure is enforced via Pydantic and is used in evaluation assertions.
+
+---
+
+## Deterministic fallback behavior
+
+If Ollama is unavailable, or if fallback is forced in eval mode, the system returns a valid typed response using heuristics.
+
+Current heuristic:
+
+- for queries containing “risk”, fallback filters portfolio to FMCG or Bond holdings and returns a valid `GeneralQA`/`NewsImpact` shape.
+
+This guarantees stable behavior in offline or credential-free reviewer environments.
+
+---
+
+## What “hallucination” means in this RAG CLI
+
+In this project, a hallucination means:
+
+> The model outputs a confident statement that is not grounded in retrieved documents, portfolio data, or defined glossary entries.
+
+How this implementation reduces hallucination risk:
+
+- retrieval-first design (context loaded before response generation),
+- source file propagation (`sources` field),
+- strict structured output with Pydantic validation,
+- deterministic fallback path when model behavior is unreliable,
+- eval checks that reject malformed or schema-violating responses.
+
+This does not make hallucinations mathematically impossible, but it narrows failure modes and makes them easier to detect.
+
+---
+
+## Evaluation design
+
+`evals/cases.yaml` defines exactly five cases:
+
+1. General portfolio query
+2. Risk/fallback query
+3. News impact query
+4. Glossary query
+5. Edge out-of-scope query
+
+At least three cases print execution traces to inspect graph behavior.
+
+`evals/run_eval.py`:
+
+- loads YAML,
+- runs agent per case,
+- validates against expected Pydantic schema,
+- checks forced fallback branch,
+- prints PASS/FAIL summary,
+- raises assertion if any test fails.
+
+---
+
+## What I’d do with 2 more days
+
+1. Move to a dedicated vector database
+   - Evaluate Qdrant and Pinecone for better metadata filtering, persistence controls, and scaling under concurrent load.
+
+2. Add async ingestion and evaluation
+   - Batch embeddings and parallel retrieval/eval paths to speed up cold-start and regression test cycles.
+
+3. Expand evaluation framework
+   - Add golden-answer scoring, source-grounding checks, and negative tests for contradiction handling.
+
+4. Improve ranking strategy
+   - Replace simple exposure weighting with a hybrid score combining recency, ticker frequency in retrieved chunks, and holding value sensitivity.
+
+5. Production-hardening
+   - Add structured logging, request IDs, richer typed error schema, and CI jobs for lint/type/test gates.
+
+---
+
+## Notes
+
+- This repo is designed to be readable first, then extensible.
+- The CLI intentionally favors deterministic JSON outputs for auditability.

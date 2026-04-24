@@ -7,6 +7,8 @@ import os
 
 def get_llm() -> ChatOllama:
     """Returns the standard configured Ollama LLM."""
+    if os.getenv("BYLD_FORCE_FALLBACK", "0") == "1":
+        raise RuntimeError("Forced fallback enabled for deterministic evaluation.")
     base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     return ChatOllama(model="llama3.1", base_url=base_url, temperature=0)
 

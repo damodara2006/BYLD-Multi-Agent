@@ -4,6 +4,7 @@
 
 - I used Python 3.11+, uv packaging, Makefile, LangGraph, LangChain, Chroma, sentence-transformers, and Ollama.
 - I added `langchain-community` and `langchain-text-splitters` to avoid import issues in the indexer.
+- I added YAML-driven evaluation with `PyYAML` and strict schema validation using Pydantic in `evals/run_eval.py`.
 
 ## Significant prompts
 
@@ -16,20 +17,25 @@
 - Prompt: Build Step 3 multi-step LangGraph agent with retrieval, cross-reference, ranking, and formatting.
   - What the AI produced: `portfolio_ask/agent.py` with a typed state and 4 nodes (`retrieve`, `cross_reference`, `rank`, `format`), plus `portfolio_ask/__main__.py` CLI that prints formatted JSON.
   - What I kept/rejected: I kept the full graph flow and JSON-only CLI output. I rejected any chatbot-style response behavior.
+- Prompt: Generate a final eval harness with exactly 5 YAML cases, strict `assert` checks, trace printing, and pass/fail summary.
+  - What the AI produced: `evals/cases.yaml`, `evals/run_eval.py`, README rewrite, and Makefile updates for `python3` compatibility.
+  - What I kept/rejected: I kept the 5-case structure and strict schema checks. I rejected adding random or non-deterministic test data because I wanted reproducible reviewer runs.
 
 ## A bug your AI introduced
 
 - The AI originally wrote my log in the wrong format using step-based headers. I caught this because it did not match the reviewer template. I fixed it by rewriting the full file to this exact 5-section format.
 - The AI used `langchain_community` and `langchain_text_splitters` in code but did not include both dependencies at first. I fixed it by adding both packages to `pyproject.toml`.
+- The AI initially used `python` in Makefile commands, but this Linux environment only had `python3`. I caught this from command failures and fixed the Makefile to use `python3` for `data`, `run`, and `eval`.
 
 ## A design choice you made against AI suggestion
 
 - I chose local Ollama inference over hosted Groq even though hosted inference can be easier to start. I did this because this assignment needs deterministic behavior without external API dependency risk.
 - I chose a strict JSON CLI contract (no conversational wrapper text) so test harnesses can parse output reliably.
+- I structured YAML test cases to cover one behavior per case (general, fallback, news-impact, glossary, edge). I did this so failures are easy to debug and reviewers can map each case to a clear requirement.
 
 ## Time split
 
-- 30% infrastructure and data setup
-- 35% retrieval/indexing plus schema work
-- 25% multi-step agent state flow and CLI integration
-- 10% debugging and log/template corrections
+- 24% infrastructure and data setup
+- 31% retrieval/indexing plus schema work
+- 24% multi-step agent state flow and CLI integration
+- 21% testing and documentation

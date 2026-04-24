@@ -5,10 +5,10 @@ setup:
 	uv pip install -e .
 
 data:
-	python scripts/generate_mock_data.py
+	python3 scripts/generate_mock_data.py
 
 run:
-	python -m portfolio_ask
+	python3 -m portfolio_ask "$(QUERY)"
 
 eval:
-	python evals/run_eval.py
+	python3 evals/run_eval.py

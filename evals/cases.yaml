@@ -1,0 +1,31 @@
+cases:
+  - id: general_portfolio_tech_exposure
+    description: General portfolio query
+    query: 'What is my tech exposure?'
+    expected_schema: GeneralQA
+    print_trace: true
+
+  - id: fallback_low_risk_assets
+    description: Risk-based query to trigger deterministic fallback
+    query: 'What are my low risk stocks?'
+    expected_schema: GeneralQA
+    force_fallback: true
+    print_trace: true
+
+  - id: market_news_impact
+    description: Multi-step news impact query
+    query: 'What news is likely to affect my portfolio?'
+    expected_schema: NewsImpact
+    print_trace: true
+
+  - id: glossary_definition_xirr
+    description: Glossary term query
+    query: 'What is XIRR?'
+    expected_schema: GeneralQA
+    print_trace: false
+
+  - id: edge_out_of_scope
+    description: Edge case out-of-scope query
+    query: 'Write me a weekend trip plan to Goa with hotel options.'
+    expected_schema: GeneralQA
+    print_trace: false
