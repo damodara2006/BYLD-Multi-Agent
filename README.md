@@ -20,7 +20,7 @@ This project is intentionally CLI-only (no chatbot UI) so outputs can be tested 
 
 The workflow is a **Variant C — Multi-Step Agent** implemented as a LangGraph state machine:
 
-![Agent Graph Flow](docs/agent_graph.png)
+<img src="docs/agent_graph.png" alt="Agent Graph Flow" width="180" />
 
 Each query passes through four sequential nodes before returning a typed response:
 
