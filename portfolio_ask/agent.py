@@ -39,7 +39,7 @@ def detect_query_type(query: str) -> str:
     tax_keywords = ["tax", "ltcg", "xirr", "glossary"]
     if any(kw in lowered_query for kw in tax_keywords):
         return "general_qa"
-    impact_keywords = ["impact", "news", "affected", "affect", "rank", "exposure"]
+    impact_keywords = ["impact", "news", "affected", "affect", "rank", "exposure", "holdings", "stocks", "sector", "positioned", "portfolio", "performance"]
     if any(kw in lowered_query for kw in impact_keywords):
         return "news_impact"
     return "general_qa"
@@ -143,6 +143,7 @@ def format_node(state: AgentState) -> AgentState:
         f"PORTFOLIO MATCHES: {ranked_block}\n\n"
         "Ensure the response matches the schema exactly. No conversational filler.\n"
         "CRITICAL: You must provide a clear, narrative explanation of the answer in the 'summary' field, especially for tax or glossary-related queries. If the user asks for an explanation (like LTCG), synthesize the retrieved glossary definitions into the summary.\n"
+        "CRITICAL: Do not provide a 'meta' summary. Instead of saying 'I will analyze...', provide the actual analysis immediately based on the data. Be direct and insightful.\n"
         "NEGATIVE CONSTRAINT: If a ticker mentioned in the query is NOT present in the 'Cross referenced ranked items' block, you MUST explicitly state that the user does not hold that specific ticker. DO NOT attribute weights or data from other holdings to tickers the user does not own."
     )
 

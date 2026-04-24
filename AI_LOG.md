@@ -33,6 +33,7 @@
 - I caught a logic error where queries mentioning 'impact' triggered a news-only focus, leaving the 'summary' field empty for tax questions. I fixed this by updating the prompt to mandate a narrative synthesis in the summary field.
 - I caught a naming mismatch where the evaluation script looked for '.answer' while the schema used '.summary'. I fixed this and also implemented a `--case` filter in the eval harness to allow for surgical testing of failed cases without re-running the entire suite.
 - I caught a hallucination where the LLM attributed TCS.NS's exposure weight to Samsung. I fixed this by adding a strict 'Negative Constraint' to the prompt, forcing the LLM to admit when a ticker is missing from the portfolio.
+- I identified a 'Category Drift' bug where portfolio-specific queries were being treated as general Q&A. I fixed this by expanding the keyword detection logic and hardening the system prompt to prevent 'meta' summaries.
 
 ## A design choice you made against AI suggestion
 
