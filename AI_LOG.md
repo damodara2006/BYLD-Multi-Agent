@@ -26,12 +26,17 @@
 - The AI originally wrote my log in the wrong format using step-based headers. I caught this because it did not match the reviewer template. I fixed it by rewriting the full file to this exact 5-section format.
 - The AI used `langchain_community` and `langchain_text_splitters` in code but did not include both dependencies at first. I fixed it by adding both packages to `pyproject.toml`.
 - The AI initially used `python` in Makefile commands, but this Linux environment only had `python3`. I caught this from command failures and fixed the Makefile to use `python3` for `data`, `run`, and `eval`.
+- The AI's default dependency configuration caused a massive 4GB CUDA/NVIDIA bloat via sentence-transformers. I caught this by interrupting the build.
+- The AI claimed the PyTorch CPU fix worked, but uv pip install was still reading a cached lockfile and downloading CUDA binaries. I caught this hallucination by watching the terminal output. I fixed it by changing the Makefile to delete uv.lock and strictly use uv sync instead.
+- The AI routed "What is my tech exposure?" to the NewsImpact schema because it used "exposure" as a news keyword. I caught this when eval case 1 failed schema validation. I fixed it by removing "exposure" from the news intent keyword list.
 
 ## A design choice you made against AI suggestion
 
 - I chose local Ollama inference over hosted Groq even though hosted inference can be easier to start. I did this because this assignment needs deterministic behavior without external API dependency risk.
 - I chose a strict JSON CLI contract (no conversational wrapper text) so test harnesses can parse output reliably.
 - I structured YAML test cases to cover one behavior per case (general, fallback, news-impact, glossary, edge). I did this so failures are easy to debug and reviewers can map each case to a clear requirement.
+- Instead of passing messy --extra-index-url flags in the Makefile, I explicitly configured [[tool.uv.index]] and [tool.uv.sources] in the pyproject.toml. This forces uv to strictly resolve torch to the CPU-only index, ensuring the project always stays lightweight and installs in under 2 minutes for the reviewer.
+- I changed Makefile runtime commands to `uv run` so I do not depend on manual shell activation. This keeps reviewer commands predictable and avoids missing-module errors.
 
 ## Time split
 

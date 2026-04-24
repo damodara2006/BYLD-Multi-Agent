@@ -26,7 +26,7 @@ class AgentState(TypedDict):
 def detect_query_type(query: str) -> str:
     """Detect if the user asks for news impact or general Q&A."""
     lowered_query = query.lower()
-    impact_keywords = ["impact", "news", "affected", "affect", "rank", "exposure"]
+    impact_keywords = ["impact", "news", "affected", "affect", "rank"]
     for keyword in impact_keywords:
         if keyword in lowered_query:
             return "news_impact"

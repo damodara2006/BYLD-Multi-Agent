@@ -1,14 +1,14 @@
 .PHONY: setup data run eval
 
 setup:
-	uv venv
-	uv pip install -e .
+	rm -f uv.lock
+	uv sync
 
 data:
-	python3 scripts/generate_mock_data.py
+	uv run python scripts/generate_mock_data.py
 
 run:
-	python3 -m portfolio_ask "$(QUERY)"
+	uv run python -m portfolio_ask "$(QUERY)"
 
 eval:
-	python3 evals/run_eval.py
+	uv run python evals/run_eval.py
