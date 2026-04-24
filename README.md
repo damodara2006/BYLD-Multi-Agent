@@ -18,14 +18,20 @@ This project is intentionally CLI-only (no chatbot UI) so outputs can be tested 
 
 ## Architecture at a glance
 
-The workflow is a **Variant C — Multi-Step Agent**:
+The workflow is a **Variant C — Multi-Step Agent** implemented as a LangGraph state machine:
 
-1. `retrieve` node: pulls relevant chunks from Chroma.
-2. `cross_reference` node: maps retrieved context to portfolio holdings.
-3. `rank` node: calculates simple exposure weights.
-4. `format` node: returns strict Pydantic JSON with `with_structured_output`.
-5. fallback mode: if Ollama fails or is disabled, it returns deterministic typed output.
-6. `intent recognition`: detects full portfolio and risk queries early, and bypasses news filtering so safe assets and complete holdings are not lost.
+![Agent Graph Flow](docs/agent_graph.png)
+
+Each query passes through four sequential nodes before returning a typed response:
+
+| Node | What it does |
+|---|---|
+| `retrieve` | Similarity search against Chroma vector store — returns top-6 chunks from news + glossary |
+| `cross_reference` | Maps retrieved chunk content to portfolio tickers; applies global bypass for full-portfolio and risk queries so safe/defensive assets are never filtered out |
+| `rank` | Calculates exposure weights per holding by market value; orders items for the LLM prompt |
+| `format` | Calls Ollama via `with_structured_output` — returns a strict `GeneralQA` or `NewsImpact` Pydantic shape; falls back to deterministic heuristic if Ollama is unavailable |
+
+If Ollama is unreachable, the graph short-circuits at `format` and returns a data-aware fallback (real tickers extracted from state) rather than a generic error.
 
 Main package layout:
 
@@ -69,7 +75,7 @@ Run:
 
 This creates:
 
-- `data/portfolio.json` (15 holdings)
+- `data/portfolio.json` (16 holdings — equity, ETF, bond, mutual fund)
 - `data/news/*.md` (20 files)
 - `data/glossary.md` (wealth-tech terms)
 

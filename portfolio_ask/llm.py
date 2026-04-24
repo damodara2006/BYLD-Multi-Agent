@@ -3,7 +3,6 @@ from pathlib import Path
 from pydantic import BaseModel
 from portfolio_ask.schemas import GeneralQA, NewsImpact
 from langchain_ollama import ChatOllama
-from langchain_groq import ChatGroq
 import os
 
 def get_llm() -> ChatOllama:
