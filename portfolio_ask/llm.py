@@ -11,7 +11,7 @@ def get_llm() -> ChatOllama:
     if os.getenv("BYLD_FORCE_FALLBACK", "0") == "1":
         raise RuntimeError("Forced fallback enabled for deterministic evaluation.")
     base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    return ChatGroq(model="openai/gpt-oss-120b", temperature=0.0, api_key="")
+    return ChatOllama(model="llama3.1:8b", temperature=0.0, base_url=base_url)
 
 def get_fallback_response(query: str, schema_cls: type[BaseModel]) -> BaseModel:
     """

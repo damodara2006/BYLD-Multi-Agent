@@ -8,6 +8,7 @@ from typing import Any, Callable, TypedDict, cast
 from langchain_core.documents import Document
 from langgraph.graph import END, START, StateGraph
 from rich.console import Console
+from rich.text import Text
 
 from portfolio_ask.llm import get_fallback_response, get_llm
 from portfolio_ask.schemas import GeneralQA, NewsImpact
@@ -29,7 +30,14 @@ class AgentState(TypedDict):
 
 def _emit_node_heartbeat(node_name: str, message: str) -> None:
     """Emit a visible node heartbeat and update optional CLI status."""
-    console.print(f"[bold blue]Node:[/bold blue] {message}")
+    style_map = {
+        "retrieving context": "bold green",
+        "cross-referencing": "bold cyan",
+        "ranking assets": "bold yellow",
+        "finalizing output": "bold magenta",
+    }
+    label_style = style_map.get(node_name, "bold blue")
+    console.print(Text("Node: ", style=label_style) + Text(message))
     if _NODE_PROGRESS_CALLBACK is not None:
         _NODE_PROGRESS_CALLBACK(node_name)
 
