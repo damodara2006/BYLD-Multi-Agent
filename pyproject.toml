@@ -1,0 +1,26 @@
+[project]
+name = "byld-multi-agent"
+version = "0.1.0"
+description = "BYLD Wealth - Multi-Step Agent RAG CLI"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langchain-core",
+    "langchain-ollama",
+    "langchain-huggingface",
+    "langchain-chroma",
+    "langchain-community",
+    "langchain-text-splitters",
+    "pydantic>=2.0",
+    "langgraph",
+    "sentence-transformers",
+    "pyyaml",
+    "chromadb"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+portfolio-ask = "portfolio_ask.__main__:main"

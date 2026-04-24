@@ -1,0 +1,152 @@
+[
+    {
+        "ticker": "RELIANCE.NS",
+        "holding_name": "Reliance Industries Limited",
+        "sector": "Energy",
+        "instrument_type": "Equity",
+        "quantity": 50,
+        "avg_cost": 2400.5,
+        "current_price": 2850.0,
+        "currency": "INR"
+    },
+    {
+        "ticker": "HDFCBANK.NS",
+        "holding_name": "HDFC Bank Limited",
+        "sector": "Financials",
+        "instrument_type": "Equity",
+        "quantity": 100,
+        "avg_cost": 1500.0,
+        "current_price": 1450.75,
+        "currency": "INR"
+    },
+    {
+        "ticker": "TCS.NS",
+        "holding_name": "Tata Consultancy Services",
+        "sector": "IT",
+        "instrument_type": "Equity",
+        "quantity": 25,
+        "avg_cost": 3200.0,
+        "current_price": 3900.2,
+        "currency": "INR"
+    },
+    {
+        "ticker": "INFY.NS",
+        "holding_name": "Infosys Limited",
+        "sector": "IT",
+        "instrument_type": "Equity",
+        "quantity": 75,
+        "avg_cost": 1400.8,
+        "current_price": 1420.5,
+        "currency": "INR"
+    },
+    {
+        "ticker": "ITC.NS",
+        "holding_name": "ITC Limited",
+        "sector": "FMCG",
+        "instrument_type": "Equity",
+        "quantity": 300,
+        "avg_cost": 210.0,
+        "current_price": 420.3,
+        "currency": "INR"
+    },
+    {
+        "ticker": "ICICIBANK.NS",
+        "holding_name": "ICICI Bank Limited",
+        "sector": "Financials",
+        "instrument_type": "Equity",
+        "quantity": 80,
+        "avg_cost": 800.5,
+        "current_price": 1050.0,
+        "currency": "INR"
+    },
+    {
+        "ticker": "SBI.NS",
+        "holding_name": "State Bank of India",
+        "sector": "Financials",
+        "instrument_type": "Equity",
+        "quantity": 120,
+        "avg_cost": 450.0,
+        "current_price": 750.0,
+        "currency": "INR"
+    },
+    {
+        "ticker": "BHARTIARTL.NS",
+        "holding_name": "Bharti Airtel Limited",
+        "sector": "Telecommunication",
+        "instrument_type": "Equity",
+        "quantity": 60,
+        "avg_cost": 650.0,
+        "current_price": 1150.8,
+        "currency": "INR"
+    },
+    {
+        "ticker": "HUL.NS",
+        "holding_name": "Hindustan Unilever Limited",
+        "sector": "FMCG",
+        "instrument_type": "Equity",
+        "quantity": 40,
+        "avg_cost": 2300.25,
+        "current_price": 2250.0,
+        "currency": "INR"
+    },
+    {
+        "ticker": "LARSEN.NS",
+        "holding_name": "Larsen & Toubro Limited",
+        "sector": "Industrials",
+        "instrument_type": "Equity",
+        "quantity": 30,
+        "avg_cost": 1900.0,
+        "current_price": 3600.5,
+        "currency": "INR"
+    },
+    {
+        "ticker": "BAJFINANCE.NS",
+        "holding_name": "Bajaj Finance Limited",
+        "sector": "Financials",
+        "instrument_type": "Equity",
+        "quantity": 15,
+        "avg_cost": 5500.0,
+        "current_price": 7000.0,
+        "currency": "INR"
+    },
+    {
+        "ticker": "SGB2024.NS",
+        "holding_name": "Sovereign Gold Bond 2024",
+        "sector": "Commodity",
+        "instrument_type": "Bond",
+        "quantity": 50,
+        "avg_cost": 5000.0,
+        "current_price": 6200.0,
+        "currency": "INR"
+    },
+    {
+        "ticker": "NIFTYBEES.NS",
+        "holding_name": "Nippon India ETF Nifty 50 BeES",
+        "sector": "Market Index",
+        "instrument_type": "ETF",
+        "quantity": 200,
+        "avg_cost": 200.5,
+        "current_price": 250.75,
+        "currency": "INR"
+    },
+    {
+        "ticker": "ZOMATO.NS",
+        "holding_name": "Zomato Limited",
+        "sector": "Consumer Discretionary",
+        "instrument_type": "Equity",
+        "quantity": 500,
+        "avg_cost": 60.0,
+        "current_price": 180.5,
+        "currency": "INR"
+    },
+    {
+        "ticker": "INDIGO.NS",
+        "holding_name": "InterGlobe Aviation Limited",
+        "sector": "Aviation",
+        "instrument_type": "Equity",
+        "quantity": 20,
+        "avg_cost": 1800.0,
+        "current_price": 3100.0,
+        "currency": "INR"
+    }
+]
