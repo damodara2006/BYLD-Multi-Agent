@@ -148,5 +148,15 @@
         "avg_cost": 1800.0,
         "current_price": 3100.0,
         "currency": "INR"
+    },
+    {
+        "ticker": "PPFAS-FLEXI.MF",
+        "holding_name": "Parag Parikh Flexi Cap Direct Growth",
+        "sector": "Diversified Equity",
+        "instrument_type": "Mutual Fund",
+        "quantity": 1540.5,
+        "avg_cost": 55.2,
+        "current_price": 74.8,
+        "currency": "INR"
     }
 ]

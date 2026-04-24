@@ -20,6 +20,7 @@ def generate_portfolio() -> List[Dict]:
         {"ticker": "NIFTYBEES.NS", "holding_name": "Nippon India ETF Nifty 50 BeES", "sector": "Market Index", "instrument_type": "ETF", "quantity": 200, "avg_cost": 200.50, "current_price": 250.75, "currency": "INR"},
         {"ticker": "ZOMATO.NS", "holding_name": "Zomato Limited", "sector": "Consumer Discretionary", "instrument_type": "Equity", "quantity": 500, "avg_cost": 60.00, "current_price": 180.50, "currency": "INR"},
         {"ticker": "INDIGO.NS", "holding_name": "InterGlobe Aviation Limited", "sector": "Aviation", "instrument_type": "Equity", "quantity": 20, "avg_cost": 1800.00, "current_price": 3100.00, "currency": "INR"},
+        {"ticker": "PPFAS-FLEXI.MF", "holding_name": "Parag Parikh Flexi Cap Direct Growth", "sector": "Diversified Equity", "instrument_type": "Mutual Fund", "quantity": 1540.5, "avg_cost": 55.20, "current_price": 74.80, "currency": "INR"},
     ]
 
 def generate_news(base_path: Path):
@@ -68,7 +69,9 @@ def generate_glossary(base_path: Path):
         "- **Repo Rate**: The rate at which the central bank (RBI) of India lends money to commercial banks in the event of any shortfall of funds.",
         "- **Sensex**: The benchmark index of the BSE (Bombay Stock Exchange) comprising 30 of the largest and most actively traded stocks.",
         "- **Nifty 50**: The flagship benchmark index of the National Stock Exchange (NSE) representing the weighted average of 50 of the largest Indian companies.",
-        "- **Retail Investor**: An individual or non-professional investor who buys and sells securities, mutual funds, or ETFs through traditional or online brokerage firms."
+        "- **Retail Investor**: An individual or non-professional investor who buys and sells securities, mutual funds, or ETFs through traditional or online brokerage firms.",
+        "- **STCG (Short-Term Capital Gains)**: Profit from the sale of listed equity shares or equity-oriented mutual funds held for less than 12 months, taxed at a flat rate of 20% under Section 111A of the Income Tax Act.",
+        "- **LTCG (Long-Term Capital Gains)**: Profit from the sale of listed equity shares or equity-oriented mutual funds held for more than 12 months, taxed at 12.5% on gains exceeding Rs 1.25 lakh in a financial year under Section 112A.",
     ]
     
     with open(base_path / "glossary.md", 'w') as f:

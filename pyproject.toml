@@ -18,7 +18,6 @@ dependencies = [
     "pyyaml",
     "chromadb",
     "rich",
-    "langchain-groq>=1.1.2",
 ]
 
 [build-system]

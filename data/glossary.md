@@ -15,3 +15,5 @@
 - **Sensex**: The benchmark index of the BSE (Bombay Stock Exchange) comprising 30 of the largest and most actively traded stocks.
 - **Nifty 50**: The flagship benchmark index of the National Stock Exchange (NSE) representing the weighted average of 50 of the largest Indian companies.
 - **Retail Investor**: An individual or non-professional investor who buys and sells securities, mutual funds, or ETFs through traditional or online brokerage firms.
+- **STCG (Short-Term Capital Gains)**: Profit from the sale of listed equity shares or equity-oriented mutual funds held for less than 12 months, taxed at a flat rate of 20% under Section 111A of the Income Tax Act.
+- **LTCG (Long-Term Capital Gains)**: Profit from the sale of listed equity shares or equity-oriented mutual funds held for more than 12 months, taxed at 12.5% on gains exceeding Rs 1.25 lakh in a financial year under Section 112A.

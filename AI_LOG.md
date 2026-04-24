@@ -48,6 +48,7 @@
 - I extended the Global Bypass to 'risk-based' queries. I realized that safe-haven assets (like Bonds) rarely appear in daily volatile news, so strict RAG filtering would hide the user's safest assets when they need them most.
 - I upgraded the Variant C fallback to be 'Data-Aware'. Instead of a generic error message, the system now performs a deterministic extraction of relevant tickers from the state when the LLM crashes, ensuring the user always receives actionable data.
 - I replaced raw JSON output with a Rich-based TUI (Terminal User Interface). I decided that for a financial tool, data scannability via color-coded tables is more important than raw data dumps, even though the AI initially suggested simple printing.
+- During a final rubric audit, I noticed the AI generated an ETF instead of a true NAV-based Mutual Fund, and lacked explicit STCG/LTCG headers in the glossary. I manually forced the injection of 'PPFAS-FLEXI.MF' and explicit tax definitions to ensure strict compliance with the brief, and stripped out residual `langchain-groq` dependencies to keep the build pristine.
 
 ## Time split
 
