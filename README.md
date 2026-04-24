@@ -2,6 +2,8 @@
 
 BYLD-Multi-Agent is a production-style Python 3.11+ Retrieval-Augmented Generation (RAG) CLI for a BYLD Wealth take-home assignment.
 
+It now includes a Rich Terminal UI (TUI) for executive scannability, while still keeping strict JSON outputs for automation.
+
 It is designed to answer portfolio and market context questions using:
 
 - deterministic local data,
@@ -23,6 +25,7 @@ The workflow is a **Variant C — Multi-Step Agent**:
 3. `rank` node: calculates simple exposure weights.
 4. `format` node: returns strict Pydantic JSON with `with_structured_output`.
 5. fallback mode: if Ollama fails or is disabled, it returns deterministic typed output.
+6. `intent recognition`: detects full portfolio and risk queries early, and bypasses news filtering so safe assets and complete holdings are not lost.
 
 Main package layout:
 
@@ -30,8 +33,9 @@ Main package layout:
 - `portfolio_ask/vector_store.py`: Chroma + BAAI embedding setup
 - `portfolio_ask/llm.py`: Ollama model and deterministic fallback behavior
 - `portfolio_ask/agent.py`: LangGraph state machine
+- `portfolio_ask/main.py`: Rich TUI entrypoint and output renderer
 - `portfolio_ask/schemas.py`: `GeneralQA` and `NewsImpact` response contracts
-- `portfolio_ask/__main__.py`: CLI entrypoint
+- `portfolio_ask/__main__.py`: CLI wrapper entrypoint
 - `evals/cases.yaml`: fixed test cases
 - `evals/run_eval.py`: schema-driven evaluation harness
 
@@ -97,6 +101,7 @@ The system returns one of two strict JSON schemas:
 
 - `query_type: str`
 - `answer: str`
+- `ranked_items: list[dict]`
 - `sources: List[str]`
 - `trace: List[str]`
 
@@ -104,7 +109,7 @@ The system returns one of two strict JSON schemas:
 
 - `query_type: str`
 - `summary: str`
-- `ranked_items: List[{ticker, rationale, exposure_weight}]`
+- `ranked_items: List[{ticker, rationale, exposure_weight, risk_level}]`
 - `sources: List[str]`
 - `trace: List[str]`
 
@@ -114,11 +119,12 @@ This structure is enforced via Pydantic and is used in evaluation assertions.
 
 ## Deterministic fallback behavior
 
-If Ollama is unavailable, or if fallback is forced in eval mode, the system returns a valid typed response using heuristics.
+If Ollama is unavailable, or if fallback is forced in eval mode, the system uses Data-Aware Graceful Degradation.
 
 Current heuristic:
 
-- for queries containing “risk”, fallback filters portfolio to FMCG or Bond holdings and returns a valid `GeneralQA`/`NewsImpact` shape.
+- for queries containing “risk”, fallback filters portfolio to FMCG or Bond holdings and returns a valid typed shape.
+- if the LLM crashes, the system extracts the available tickers from the current state and still shows the user actionable holdings data instead of a generic error.
 
 This guarantees stable behavior in offline or credential-free reviewer environments.
 
@@ -160,6 +166,7 @@ At least three cases print execution traces to inspect graph behavior.
 - runs agent per case,
 - validates against expected Pydantic schema,
 - checks forced fallback branch,
+- supports surgical testing with `--case` so one failed case can be run by itself,
 - prints PASS/FAIL summary,
 - raises assertion if any test fails.
 
