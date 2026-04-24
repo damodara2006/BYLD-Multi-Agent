@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 class GeneralQA(BaseModel):
     """Schema for general queries regarding portfolio and financial terms."""
     query_type: str = Field(description="The type of the query (e.g., 'portfolio', 'general')")
-    answer: str = Field(description="The final answer to the user's query.")
+    summary: str = Field(description="The final answer to the user's query.")
     sources: List[str] = Field(description="List of source files or items used.")
     trace: List[str] = Field(description="Internal reasoning steps indicating how the answer was reached.")
 

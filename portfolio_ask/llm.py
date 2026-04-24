@@ -40,7 +40,7 @@ def get_fallback_response(query: str, schema_cls: type[BaseModel]) -> BaseModel:
     if schema_cls == GeneralQA:
         return GeneralQA(
             query_type="heuristic_fallback",
-            answer=answer,
+            summary=answer,
             sources=["data/portfolio.json"],
             trace=trace_log
         )

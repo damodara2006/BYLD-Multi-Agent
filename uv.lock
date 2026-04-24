@@ -273,6 +273,7 @@ dependencies = [
     { name = "langgraph" },
     { name = "pydantic" },
     { name = "pyyaml" },
+    { name = "rich" },
     { name = "sentence-transformers" },
     { name = "torch", version = "2.11.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.11.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
@@ -290,6 +291,7 @@ requires-dist = [
     { name = "langgraph" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pyyaml" },
+    { name = "rich" },
     { name = "sentence-transformers" },
     { name = "torch", index = "https://download.pytorch.org/whl/cpu" },
 ]

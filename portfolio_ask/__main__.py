@@ -4,6 +4,10 @@ import json
 import sys
 
 from portfolio_ask.agent import run_agent
+from rich.console import Console
+
+
+console = Console()
 
 
 def main() -> None:
@@ -27,7 +31,17 @@ def main() -> None:
             filtered_args.append(arg)
 
     query = " ".join(filtered_args).strip()
-    result = run_agent(query=query, print_trace=print_trace)
+
+    with console.status("[bold cyan]Agent: initializing...[/bold cyan]", spinner="dots") as status:
+        def update_status(node_name: str) -> None:
+            status.update(f"[bold cyan]Agent: {node_name}...[/bold cyan]")
+
+        result = run_agent(
+            query=query,
+            print_trace=print_trace,
+            progress_callback=update_status,
+        )
+
     print(result.model_dump_json(indent=2))
 
 

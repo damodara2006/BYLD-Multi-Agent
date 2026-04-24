@@ -30,6 +30,9 @@
 - The AI claimed the PyTorch CPU fix worked, but uv pip install was still reading a cached lockfile and downloading CUDA binaries. I caught this hallucination by watching the terminal output. I fixed it by changing the Makefile to delete uv.lock and strictly use uv sync instead.
 - The AI routed "What is my tech exposure?" to the NewsImpact schema because it used "exposure" as a news keyword. I caught this when eval case 1 failed schema validation. I fixed it by removing "exposure" from the news intent keyword list.
 - When we pivoted from Groq to Ollama, the AI used an incorrect model string in `llm.py`. This caused Ollama to reject the connection and continuously trigger the fallback. I caught this by running `ollama list` and updating the code to request exactly `llama3.1:8b`.
+- I caught a logic error where queries mentioning 'impact' triggered a news-only focus, leaving the 'summary' field empty for tax questions. I fixed this by updating the prompt to mandate a narrative synthesis in the summary field.
+- I caught a naming mismatch where the evaluation script looked for '.answer' while the schema used '.summary'. I fixed this and also implemented a `--case` filter in the eval harness to allow for surgical testing of failed cases without re-running the entire suite.
+- I caught a hallucination where the LLM attributed TCS.NS's exposure weight to Samsung. I fixed this by adding a strict 'Negative Constraint' to the prompt, forcing the LLM to admit when a ticker is missing from the portfolio.
 
 ## A design choice you made against AI suggestion
 
@@ -38,6 +41,7 @@
 - I structured YAML test cases to cover one behavior per case (general, fallback, news-impact, glossary, edge). I did this so failures are easy to debug and reviewers can map each case to a clear requirement.
 - Instead of passing messy --extra-index-url flags in the Makefile, I explicitly configured [[tool.uv.index]] and [tool.uv.sources] in the pyproject.toml. This forces uv to strictly resolve torch to the CPU-only index, ensuring the project always stays lightweight and installs in under 2 minutes for the reviewer.
 - I changed Makefile runtime commands to `uv run` so I do not depend on manual shell activation. This keeps reviewer commands predictable and avoids missing-module errors.
+- I forced the addition of a visual progress indicator using `rich`. While the AI suggested a simple CLI, a 3-minute wait on a CPU-bound local model requires a 'heartbeat' to prevent the user from thinking the process has hung.
 
 ## Time split
 

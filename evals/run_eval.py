@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any
+import argparse
 
 import yaml
 from pydantic import ValidationError
@@ -50,10 +51,22 @@ def print_trace_lines(trace: list[str]) -> None:
 
 def main() -> None:
     """Run evaluation suite and print PASS/FAIL summary."""
+    parser = argparse.ArgumentParser(description="Run BYLD-Multi-Agent evaluation suite")
+    parser.add_argument('--case', help='Run only the specified case by id')
+    args = parser.parse_args()
+
     root = Path(__file__).resolve().parents[1]
     cases_path = root / "evals" / "cases.yaml"
 
-    cases = load_cases(cases_path)
+    all_cases = load_cases(cases_path)
+
+    if args.case:
+        cases = [c for c in all_cases if c.get('id') == args.case]
+        if not cases:
+            print(f"Case '{args.case}' not found in cases.yaml")
+            return
+    else:
+        cases = all_cases
 
     passed = 0
     failed = 0
@@ -68,7 +81,7 @@ def main() -> None:
         print_trace = bool(case.get("print_trace", False))
         force_fallback = bool(case.get("force_fallback", False))
 
-        print(f"[{index}/5] {case_id}")
+        print(f"[{index}/{len(cases)}] {case_id}")
         print(f"  query: {query}")
         print(f"  expected: {expected_schema}")
 
@@ -87,7 +100,7 @@ def main() -> None:
                     "Expected heuristic fallback response when force_fallback is true."
                 )
                 if isinstance(result, GeneralQA):
-                    assert "FMCG" in result.answer or "Bond" in result.answer, (
+                    assert "FMCG" in result.summary or "Bond" in result.summary, (
                         "Fallback risk answer should mention FMCG or Bond defensive signals."
                     )
 
@@ -109,7 +122,8 @@ def main() -> None:
     print(f"PASS: {passed}")
     print(f"FAIL: {failed}")
 
-    assert failed == 0, "One or more eval cases failed."
+    if not args.case:
+        assert failed == 0, "One or more eval cases failed."
 
 
 if __name__ == "__main__":

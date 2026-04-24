@@ -16,7 +16,8 @@ dependencies = [
     "sentence-transformers",
     "torch",
     "pyyaml",
-    "chromadb"
+    "chromadb",
+    "rich"
 ]
 
 [build-system]
