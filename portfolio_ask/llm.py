@@ -10,7 +10,7 @@ def get_llm() -> ChatOllama:
     if os.getenv("BYLD_FORCE_FALLBACK", "0") == "1":
         raise RuntimeError("Forced fallback enabled for deterministic evaluation.")
     base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    return ChatOllama(model="llama3.1", base_url=base_url, temperature=0)
+    return ChatOllama(model="llama3.1:8b", base_url=base_url, temperature=0.0)
 
 def get_fallback_response(query: str, schema_cls: type[BaseModel]) -> BaseModel:
     """

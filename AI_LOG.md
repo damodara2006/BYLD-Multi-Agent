@@ -29,6 +29,7 @@
 - The AI's default dependency configuration caused a massive 4GB CUDA/NVIDIA bloat via sentence-transformers. I caught this by interrupting the build.
 - The AI claimed the PyTorch CPU fix worked, but uv pip install was still reading a cached lockfile and downloading CUDA binaries. I caught this hallucination by watching the terminal output. I fixed it by changing the Makefile to delete uv.lock and strictly use uv sync instead.
 - The AI routed "What is my tech exposure?" to the NewsImpact schema because it used "exposure" as a news keyword. I caught this when eval case 1 failed schema validation. I fixed it by removing "exposure" from the news intent keyword list.
+- When we pivoted from Groq to Ollama, the AI used an incorrect model string in `llm.py`. This caused Ollama to reject the connection and continuously trigger the fallback. I caught this by running `ollama list` and updating the code to request exactly `llama3.1:8b`.
 
 ## A design choice you made against AI suggestion
 
