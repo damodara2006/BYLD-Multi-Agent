@@ -53,10 +53,6 @@ Main package layout:
 
 - Python 3.11+
 - `uv` installed
-- Ollama installed locally (recommended for normal non-fallback runs)
-
-Optional but recommended:
-
 - model pulled in Ollama: `llama3.1`
 
 ---
