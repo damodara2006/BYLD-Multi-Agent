@@ -16,6 +16,13 @@ This project is intentionally CLI-only (no chatbot UI) so outputs can be tested 
 
 ---
 
+## CLI Preview
+
+<img src="docs/preview.png" alt="CLI Preview" width="750"/>
+
+
+---
+
 ## Architecture at a glance
 
 The workflow is a **Variant C — Multi-Step Agent** implemented as a LangGraph state machine:
