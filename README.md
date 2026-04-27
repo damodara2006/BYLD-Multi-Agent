@@ -180,25 +180,6 @@ At least three cases print execution traces to inspect graph behavior.
 
 ---
 
-## What I’d do with 2 more days
-
-1. Move to a dedicated vector database
-   - Evaluate Qdrant and Pinecone for better metadata filtering, persistence controls, and scaling under concurrent load.
-
-2. Add async ingestion and evaluation
-   - Batch embeddings and parallel retrieval/eval paths to speed up cold-start and regression test cycles.
-
-3. Expand evaluation framework
-   - Add golden-answer scoring, source-grounding checks, and negative tests for contradiction handling.
-
-4. Improve ranking strategy
-   - Replace simple exposure weighting with a hybrid score combining recency, ticker frequency in retrieved chunks, and holding value sensitivity.
-
-5. Production-hardening
-   - Add structured logging, request IDs, richer typed error schema, and CI jobs for lint/type/test gates.
-
----
-
 ## Notes
 
 - This repo is designed to be readable first, then extensible.
