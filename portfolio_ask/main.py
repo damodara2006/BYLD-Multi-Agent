@@ -15,19 +15,26 @@ from portfolio_ask.agent import run_agent
 console = Console()
 
 _BANNER = r"""
-██████╗  ██████╗ ███████╗████████╗███████╗██████╗  ██████╗ ███╗   ███╗
-██╔══██╗██╔═══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗██╔═══██╗████╗ ████║
-██████╔╝██║   ██║███████╗   ██║   █████╗  ██████╔╝██║   ██║██╔████╔██║
-██╔═══╝ ██║   ██║╚════██║   ██║   ██╔══╝  ██╔══██╗██║   ██║██║╚██╔╝██║
-██║     ╚██████╔╝███████║   ██║   ███████╗██║  ██║╚██████╔╝██║ ╚═╝ ██║
-╚═╝      ╚═════╝ ╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝
+██████╗ ██╗   ██╗██╗     ██████╗     ██╗    ██╗███████╗ █████╗ ██╗  ████████╗██╗  ██╗
+██╔══██╗╚██╗ ██╔╝██║     ██╔══██╗    ██║    ██║██╔════╝██╔══██╗██║  ╚══██╔══╝██║  ██║
+██████╔╝ ╚████╔╝ ██║     ██║  ██║    ██║ █╗ ██║█████╗  ███████║██║     ██║   ███████║
+██╔══██╗  ╚██╔╝  ██║     ██║  ██║    ██║███╗██║██╔══╝  ██╔══██║██║     ██║   ██╔══██║
+██████╔╝   ██║   ███████╗██████╔╝    ╚███╔███╔╝███████╗██║  ██║███████╗██║   ██║  ██║
+╚═════╝    ╚═╝   ╚══════╝╚═════╝      ╚══▀══╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝  ╚═╝
 """
 
 
 def _render_banner() -> None:
-    banner_text = Text(_BANNER, style="bold cyan")
-    title = Text("PORTFOLIO ASK", style="bold bright_blue")
-    console.print(Panel.fit(banner_text, title=title, border_style="bright_cyan", padding=(1, 2)))
+    banner_text = Text(_BANNER, style="bold blue")
+    subtitle = Text("Portfolio Intelligence Engine", style="italic dim blue")
+    console.print(Panel.fit(
+        Text.assemble(banner_text, "\n", subtitle),
+        title="BYLD QUEST",
+        title_align="center",
+        border_style="blue",
+        padding=(1, 3),
+        box=box.ROUNDED
+    ))
 
 
 def _risk_style(risk_level: str) -> str:
@@ -42,10 +49,16 @@ def _risk_style(risk_level: str) -> str:
 
 
 def _render_ranked_table(ranked_items: list[dict[str, Any]]) -> None:
-    table = Table(title="Ranked Holdings", box=box.SIMPLE_HEAVY, header_style="bold bright_cyan")
-    table.add_column("Ticker", style="bold")
-    table.add_column("Rationale", overflow="fold")
-    table.add_column("Weight (%)", justify="right")
+    table = Table(
+        title="Ranked Holdings by Impact",
+        box=box.ROUNDED,
+        header_style="bold white on blue",
+        title_style="bold blue",
+        border_style="blue"
+    )
+    table.add_column("Ticker", style="bold blue")
+    table.add_column("Rationale", overflow="fold", style="black")
+    table.add_column("Weight (%)", justify="right", style="bold blue")
     table.add_column("Risk Level", justify="center")
 
     if not ranked_items:
@@ -62,8 +75,9 @@ def _render_ranked_table(ranked_items: list[dict[str, Any]]) -> None:
         except (TypeError, ValueError):
             weight_percent = "-"
         risk_level = str(item.get("risk_level", "-")).title()
-        row_style = _risk_style(risk_level)
-        table.add_row(ticker, rationale, weight_percent, risk_level, style=row_style)
+        risk_style = _risk_style(risk_level)
+        risk_text = Text(risk_level, style=risk_style)
+        table.add_row(ticker, rationale, weight_percent, risk_text)
 
     console.print(table)
 
@@ -73,7 +87,8 @@ def _render_summary(summary: str) -> None:
         Panel(
             Markdown(summary),
             title="Summary",
-            border_style="bright_black",
+            title_align="left",
+            border_style="blue",
             box=box.ROUNDED,
             padding=(1, 2),
         )
@@ -81,12 +96,13 @@ def _render_summary(summary: str) -> None:
 
 
 def _render_sources(sources: list[str]) -> None:
-    source_text = "\n".join(f"• {source}" for source in sources) if sources else "• No sources were returned."
+    source_text = "\n".join(f"  {source}" for source in sources) if sources else "  No sources were returned."
     console.print(
         Panel(
-            Text(source_text, style="dim"),
+            Text(source_text, style="black"),
             title="Sources",
-            border_style="bright_black",
+            title_align="left",
+            border_style="blue",
             box=box.ROUNDED,
             padding=(0, 1),
         )
@@ -96,13 +112,14 @@ def _render_sources(sources: list[str]) -> None:
 def _render_trace(trace: list[str]) -> None:
     if not trace:
         return
-    trace_text = "\n".join(f"• {entry}" for entry in trace)
+    trace_text = "\n".join(f"  > {entry}" for entry in trace)
     console.print(
         Panel(
-            Text(trace_text, style="dim"),
-            title="Trace",
-            border_style="black",
-            box=box.SQUARE,
+            Text(trace_text, style="black"),
+            title="Execution Trace",
+            title_align="left",
+            border_style="blue",
+            box=box.ROUNDED,
             padding=(0, 1),
         )
     )
@@ -115,11 +132,12 @@ def main() -> None:
     if not argv:
         console.print(
             Panel(
-                "Provide a query. Example: python -m portfolio_ask 'What is my risk exposure?'",
+                "[bold blue]Example:[/bold blue] [blue]python -m portfolio_ask 'What is my tech exposure?'[/blue]",
                 title="Missing Query",
                 border_style="red",
                 box=box.ROUNDED,
-            )
+                padding=(1, 2),
+                )
         )
         raise SystemExit(1)
 
@@ -134,9 +152,15 @@ def main() -> None:
     query = " ".join(filtered_args).strip()
 
     _render_banner()
-    console.print(Panel.fit(f"[bold]Query:[/bold] {query}", border_style="cyan", box=box.ROUNDED))
+    console.print(Panel.fit(
+        f"[bold blue]Question:[/bold blue] [black]{query}[/black]",
+        border_style="blue",
+        box=box.ROUNDED,
+        padding=(0, 1),
+        style="on black"
+    ))
 
-    with console.status("[bold cyan]Agent is thinking...", spinner="dots") as status:
+    with console.status("[bold blue]Analyzing query...[/bold blue]", spinner="dots") as status:
         def update_status(node_name: str) -> None:
             friendly_map = {
                 "retrieving context": "Fetching News",
@@ -145,7 +169,7 @@ def main() -> None:
                 "finalizing output": "Generating Output",
             }
             friendly_name = friendly_map.get(node_name, node_name.replace("_", " ").title())
-            status.update(f"[bold cyan]Agent: {friendly_name}...[/bold cyan]")
+            status.update(f"[bold blue]{friendly_name}...[/bold blue]")
 
         result = run_agent(
             query=query,
@@ -159,8 +183,16 @@ def main() -> None:
     _render_sources(list(payload.get("sources", [])))
     _render_trace(list(payload.get("trace", [])))
     console.print()
-    console.print("[bold cyan]Raw JSON[/bold cyan]")
+    console.print(Panel(
+        "[dim black]Machine-readable JSON response[/dim black]",
+        title="Raw Data",
+        title_align="center",
+        border_style="blue",
+        box=box.ROUNDED,
+        padding=(0, 1)
+    ))
     console.print_json(result.model_dump_json(indent=2))
+    console.print(Panel("[bold blue]Query Complete[/bold blue]", border_style="blue", box=box.ROUNDED))
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from pathlib import Path
 from typing import Any, Callable, TypedDict, cast
 
@@ -11,8 +12,10 @@ from rich.console import Console
 from rich.text import Text
 
 from portfolio_ask.llm import get_fallback_response, get_llm
-from portfolio_ask.schemas import GeneralQA, NewsImpact
+from portfolio_ask.schemas import GeneralQA, NewsImpact, NewsImpactItem
 from portfolio_ask.vector_store import CHROMA_PATH, build_vector_store, get_vector_store
+
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 console = Console()
 
@@ -117,7 +120,7 @@ def cross_reference_node(state: AgentState) -> AgentState:
 def rank_node(state: AgentState) -> AgentState:
     """Step 3: Calculate exposure weights for the identified holdings."""
     _emit_node_heartbeat("ranking assets", "Calculating portfolio exposure and impact weights...")
-    
+
     trace_log = list(state["trace_log"])
     trace_log.append("rank: started ranking by weight")
 
@@ -129,10 +132,24 @@ def rank_node(state: AgentState) -> AgentState:
         item_value = float(item["quantity"]) * float(item["current_price"])
         weight = round(item_value / total_value, 4) if total_value > 0 else 0.0
 
+        # Determine risk level based on sector and instrument type
+        sector = str(item.get("sector", "")).lower()
+        instrument = str(item.get("instrument_type", "")).lower()
+
+        if instrument in {"bond", "fixed deposit", "savings"}:
+            risk_level = "Low"
+        elif sector in {"fmcg", "pharma", "utilities"}:
+            risk_level = "Low"
+        elif sector in {"it", "tech", "growth", "healthcare"}:
+            risk_level = "High"
+        else:
+            risk_level = "Medium"
+
         ranked_final.append({
             "ticker": item["ticker"],
             "rationale": f"Market context suggests impact on {item['sector']} ({item['instrument_type']}).",
             "exposure_weight": weight,
+            "risk_level": risk_level,
         })
 
     ranked_final.sort(key=lambda x: x["exposure_weight"], reverse=True)
@@ -172,29 +189,51 @@ def format_node(state: AgentState) -> AgentState:
         llm = get_llm()
         structured_llm = llm.with_structured_output(schema_cls)
         response = structured_llm.invoke(prompt)
-        
-        # Inject our internal trace and sources into the LLM's response
-        final_response = response.model_copy(update={"sources": sources, "trace": trace_log})
+
+        # For NewsImpact schema, convert ranked_items dicts to NewsImpactItem objects
+        if schema_cls == NewsImpact:
+            ranked_items_list = [
+                NewsImpactItem(**item) if isinstance(item, dict) else item
+                for item in state["ranked_items"]
+            ]
+        else:
+            ranked_items_list = state["ranked_items"]
+
+        # Create final response by reconstructing from response fields
+        final_response = schema_cls(
+            query_type=response.query_type,
+            summary=response.summary,
+            ranked_items=ranked_items_list,
+            sources=sources,
+            trace=trace_log
+        )
         trace_log.append("format: successfully generated via local LLM")
-        
+
     except Exception as exc:
         trace_log.append(f"format: LLM unavailable, using deterministic fallback ({type(exc).__name__})")
         fallback = get_fallback_response(state["query"], schema_cls)
         ranked_items = list(state.get("ranked_items", []))
-        tickers = [str(item.get("ticker", "")) for item in ranked_items if str(item.get("ticker", ""))]
+
+        # Convert to NewsImpactItem objects if needed
+        if schema_cls == NewsImpact:
+            ranked_items = [
+                NewsImpactItem(**item) if isinstance(item, dict) else item
+                for item in ranked_items
+            ]
+
+        tickers = [str(item.get("ticker", "")) for item in state.get("ranked_items", []) if str(item.get("ticker", ""))]
         fallback_summary = (
-            "LLM Inference failed, but your portfolio identifies potential impacts on: "
+            "Your portfolio identifies potential impacts on: "
             f"{', '.join(tickers) if tickers else 'no specific tickers were identified'}. "
             "Please check current news for these specific holdings."
         )
         # Ensure fallbacks also have the correct metadata
-        final_response = fallback.model_copy(
-            update={
-                "summary": fallback_summary,
-                "ranked_items": ranked_items,
-                "sources": sources or ["data/portfolio.json"],
-                "trace": trace_log,
-            }
+        final_response = schema_cls(
+            query_type=fallback.query_type,
+            summary=fallback_summary,
+            ranked_items=ranked_items,
+            sources=sources or ["data/portfolio.json"],
+            trace=trace_log
         )
 
     return {**state, "final_response": final_response, "trace_log": trace_log}
